@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Welcome</title>
+<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+<script src="js/jquery.cookie.js"></script>
+<script src="js/Utils.js"></script>
+
+<script>
+	/*
+	 * Methods
+	 */
+
+	function login() 
+	{
+		var pass = $("#pass").val();
+		
+		$.post("api_login_url",
+		  {api_login_param_password : pass},
+		 function(data, status) 
+		{
+			if(data.indexOf("false") > -1)
+			{
+				alert("Wrong password");
+			}
+			else
+			{
+				// done redirect to index	
+				Utils.savePassword(pass);
+				window.location.href = "/index.html";
+			}
+		});
+	}
+
+</script>
+
+</head>
+
+<body>
+
+	<form>
+		<table>
+			<tr>
+				<td>Password</td>
+				<td><input type="password" id="pass"></td>
+			</tr>
+
+			<tr>
+				<td><input type="button" value="Login"
+					onclick="login();"></td>
+			</tr>
+		</table>
+	</form>
+
+
+
+</body>
+
+</html>

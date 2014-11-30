@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Welcome</title>
+<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+<script src="js/jquery.cookie.js"></script>
+<script src="js/Utils.js"></script>
+
+
+<script>
+	$(document).ready(function() {
+		var pass = Utils.getPassword();
+		if (pass == undefined) {
+			window.location.href = "/login.html";
+		}
+	});
+
+	/*
+	 * Methods
+	 */
+
+	function sendMessageToAndroid() {
+		var txt = $("#txtfield").val();
+		$.post("ajax_app", {
+			to_android : txt
+		});
+	}
+
+	function getMessageFromAndroid() {
+		$.post("ajax_app", {
+			from_android : 'true'
+		}, function(data, status) {
+			alert(data + "");
+		});
+	}
+
+	function logout() {
+		Utils.removePassword();
+		window.location.href = "/index.html";
+	}
+</script>
+
+</head>
+
+<body>
+
+	<form>
+		<table>
+			<tr>
+				<td><img src="/ajax_app_stream?filename=app_icon.png"></td>
+			</tr>
+			<tr>
+				<td><input type="text" id="txtfield" value="hello world">
+				</td>
+				<td><input type="button" value="send message to android"
+					onclick="sendMessageToAndroid();"></td>
+			</tr>
+			<tr>
+				<td><br></td>
+			</tr>
+			<tr>
+				<td><input type="button" value="get data from android"
+					onclick="getMessageFromAndroid();"></td>
+			</tr>
+			<tr>
+				<td><a href="" onclick="logout();">Logout</a></td>
+			</tr>
+		</table>
+	</form>
+
+
+
+</body>
+
+</html>

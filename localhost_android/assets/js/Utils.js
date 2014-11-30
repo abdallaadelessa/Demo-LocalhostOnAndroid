@@ -1,57 +1,38 @@
+
 function Utils() {
+
 };
 
-Utils.setCookie = function(cname, cvalue, exdays) {
-	var d = new Date();
-	d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-	var expires = "expires=" + d.toUTCString();
-	document.cookie = cname + "=" + cvalue + "; " + expires;
+/*
+ * ----->
+ */
+
+Utils.PASSWORD_KEY = "password_key";
+
+Utils.savePassword = function(cpass) {
+$.cookie(Utils.PASSWORD_KEY,cpass);
 };
 
-Utils.getCookie = function(cname) {
-	var name = cname + "=";
-	var ca = document.cookie.split(';');
-	for ( var i = 0; i < ca.length; i++) {
-		var c = ca[i];
-		while (c.charAt(0) == ' ')
-			c = c.substring(1);
-		if (c.indexOf(name) != -1)
-			return c.substring(name.length, c.length);
-	}
-	return "";
+Utils.getPassword = function() {
+return $.cookie(Utils.PASSWORD_KEY);
 };
 
-Utils.checkCookie = function(cname) {
-	var exists = false;
-	var user = Utils.getCookie(cname);
-	if (user != "") {
-		exists = true;
-	}
-	return exists
+Utils.removePassword = function()
+{
+$.removeCookie(Utils.PASSWORD_KEY );
 };
 
-//-------------->
-function createCookie(name,value,days) {
-    if (days) {
-        var date = new Date();
-        date.setTime(date.getTime()+(days*24*60*60*1000));
-        var expires = "; expires="+date.toGMTString();
-    }
-    else var expires = "";
-    document.cookie = name+"="+value+expires+"; path=/";
+/*
+ * ----->
+ */
+
+Utils.include = function(filename)
+{
+    var head = document.getElementsByTagName('head')[0];
+    var script = document.createElement('script');
+    script.src = filename;
+    script.type = 'text/javascript';
+    head.appendChild(script)
 }
 
-function readCookie(name) {
-    var nameEQ = name + "=";
-    var ca = document.cookie.split(';');
-    for(var i=0;i < ca.length;i++) {
-        var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-    }
-    return null;
-}
 
-function eraseCookie(name) {
-    createCookie(name,"",-1);
-}

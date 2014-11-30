@@ -2,75 +2,28 @@
 <html>
 
 <head>
-<title>Welcome</title>
+
 <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
 <script src="js/jquery.cookie.js"></script>
 <script src="js/Utils.js"></script>
 
-
 <script>
-	$(document).ready(function() 
-	{
-		$.cookie('name', 'abdalla');
-		var name = $.cookie("name");
-		if(name)
-		{
-			alert($.cookie("name"));	
+	/*
+	 * Methods
+	 */
+	$(document).ready(function() {
+		var pass = Utils.getPassword();
+		if (pass == undefined) {
+			window.location.href = "/login.html";
+		} else {
+			window.location.href = "/main.html";
 		}
 	});
-	
-   /*
-	* Methods
-	*/
-	
-	function sendMessageToAndroid() 
-	{
-		var txt = $("#txtfield").val();
-		$.post("ajax_app", 
-		{to_android : txt}
-		);
-	}
-
-	function getMessageFromAndroid() 
-	{
-		$.post("ajax_app", 
-		{from_android : 'true'}
-		, function(data, status) 
-		{
-			alert(data + "");
-		});
-	}
 </script>
 
 </head>
 
 <body>
-
-	<form>
-		<table>
-			<tr>
-				<td><img src="/ajax_app_stream?filename=app_icon.png"></td>
-			</tr>
-			<tr>
-				<td>
-					<input type="text" id="txtfield" value="hello world">
-				</td>
-				<td>
-					<input type="button" value="send message to android"
-						onclick="sendMessageToAndroid();">
-				</td>
-			</tr>
-			<tr>
-				<td><br></td>
-			</tr>
-			<tr>
-				<td><input type="button" value="get data from android"
-					onclick="getMessageFromAndroid();"></td>
-			</tr>
-		</table>
-	</form>
-
-
 
 </body>
 

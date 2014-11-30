@@ -1,11 +1,7 @@
 package com.example.localservertest.controllers.service;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Locale;
 import java.util.Map;
 import android.app.Service;
 import android.content.Intent;
@@ -15,25 +11,19 @@ import android.os.Handler.Callback;
 import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
-import android.webkit.MimeTypeMap;
 import android.widget.Toast;
+import com.example.localservertest.helpers.AppServerRestApi;
+import com.example.localservertest.helpers.Utils;
+import com.example.localservertest.helpers.AppServerRestApi.AppServerRestApiInterface;
 import com.example.localservertest.helpers.NanoHTTPD;
 import com.example.localservertest.helpers.NanoHTTPD.Method;
 import com.example.localservertest.helpers.NanoHTTPD.Response;
 import com.example.localservertest.helpers.NanoHTTPD.Response.Status;
 
-public class HttpServerService extends Service
+public class HttpServerService extends Service implements
+		AppServerRestApiInterface
 {
-	// Pages
-	private static final String INDEX_PAGE = "index.html";
-	// ----------------------------------------------
-	// Apis
-	private static final String AJAX_APP = "ajax_app";
-	private static final String AJAX_APP_FILE_NAME_PARAM = "filename";
-	// ---->
-	private static final String AJAX_APP_STREAM = "ajax_app_stream";
-	private static final String AJAX_APP_TO_ANDROID_PARAM = "to_android";
-	private static final String AJAX_APP_FROM_ANDROID_PARAM = "from_android";
+	private AppServerRestApi appServerRestApi;
 	// ----------------------------------------------
 	private static final int PORT = 8080;
 	private WebServer server;
@@ -91,6 +81,7 @@ public class HttpServerService extends Service
 		{
 			try
 			{
+				appServerRestApi = new AppServerRestApi(this);
 				server = new WebServer();
 				server.start();
 				WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
@@ -102,6 +93,7 @@ public class HttpServerService extends Service
 						+ PORT;
 				Toast.makeText(this, msg, 1000).show();
 				Log.d("DEBUG", msg);
+
 			}
 			catch (IOException ioe)
 			{
@@ -123,78 +115,8 @@ public class HttpServerService extends Service
 	// -------------------------------------------------
 	// Helper methods
 
-	private InputStream getFileFromAssets(String fileName) throws IOException
-	{
-		InputStream stream = getAssets().open(fileName);
-		return stream;
-	}
-
-	private String convertHtmlPageToString(String pageName)
-	{
-		String answer = "";
-		try
-		{
-			InputStream stream = getFileFromAssets(pageName);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					stream));
-			String line = "";
-			while ((line = reader.readLine()) != null)
-			{
-				answer += line+"\n";
-			}
-			reader.close();
-		}
-		catch (IOException ioe)
-		{
-			Log.w("Httpd", ioe.toString());
-		}
-		return answer;
-	}
-
-	private static String getMimeType(String url)
-	{
-		String type = null;
-		String array[] = splitPathToFileNameAndExtByLastDot(url);
-		if (array != null && array.length == 2)
-		{
-			String extension = array[1];
-			if (extension != null && extension.length() > 0)
-			{
-				extension = extension.toLowerCase(Locale.ENGLISH);
-				MimeTypeMap mime = MimeTypeMap.getSingleton();
-				type = mime.getMimeTypeFromExtension(extension);
-			}
-		}
-		return type;
-	}
-
-	private static String[] splitPathToFileNameAndExtByLastDot(String path)
-	{
-		String[] fileNameAndExt = null;
-		File tempFile = new File(path);
-		String fileName = tempFile.getName();
-		int lastIndexOfDot = fileName.lastIndexOf(".");
-		if (lastIndexOfDot != -1)
-		{
-			// Has Extension
-			String name = fileName.substring(0, lastIndexOfDot);
-			String ext = fileName.substring(lastIndexOfDot + 1);
-			fileNameAndExt = new String[] { name, ext };
-		}
-		else
-		{
-			// Has No Extension
-			fileNameAndExt = new String[] { fileName, null };
-
-		}
-		return fileNameAndExt;
-	}
-
-	// ------------------------------------------------
-
 	private class WebServer extends NanoHTTPD
 	{
-
 		private static final String TAG = "DEBUG";
 
 		public WebServer() throws IOException
@@ -208,94 +130,54 @@ public class HttpServerService extends Service
 				Map<String, String> files)
 		{
 			Log.d(TAG, uri);
-
-			// remove first \
-			String webPage = uri.substring(1);
-			if (webPage.length() == 0)
-			{
-				webPage = INDEX_PAGE;
-			}
-
-			return prepareResponse(webPage, method, parameters);
+			
+			return appServerRestApi.handleRequest(HttpServerService.this, uri, method,
+					header, parameters, files);
 		}
 
 	}
+	// -------------------------------------------------
+	// Api methods
 
-	private Response prepareResponse(String pageToLoad, Method method,
-			Map<String, String> parameters)
+	@Override
+	public Response login(Method method, Map<String, String> parameters)
 	{
-		NanoHTTPD.Response response = null;
+		NanoHTTPD.Response response = new NanoHTTPD.Response(
+				Status.OK, NanoHTTPD.MIME_PLAINTEXT, "false");
 
-		if (pageToLoad != null)
+		if (method == Method.POST && parameters != null)
 		{
-			// parameters
-			switch (pageToLoad)
+			if (parameters.containsKey(AppServerRestApi.API_LOGIN_PASSWORD_PARAM))
 			{
-				case AJAX_APP:
+				String password = parameters.get(AppServerRestApi.API_LOGIN_PASSWORD_PARAM);
+				if(password!=null&&password.equalsIgnoreCase("abdalla123#"))
 				{
-					if (method == Method.POST)
-					{
-						response = ajax_app_text(parameters);
-					}
-					break;
+					response = new NanoHTTPD.Response(Status.OK,
+							NanoHTTPD.MIME_PLAINTEXT,"true");
 				}
-				case AJAX_APP_STREAM:
-				{
-					if (method == Method.GET)
-					{
-						response = ajax_app_stream(parameters);
-					}
-					break;
-				}
-				default:
-					String answer = convertHtmlPageToString(pageToLoad);
-					if (answer != null)
-					{
-						String mimeType;
-						if (pageToLoad.endsWith(".js"))
-						{
-							mimeType = "text/javascript";
-						}
-						else
-						{
-							mimeType = getMimeType(pageToLoad);
-						}
-
-						response = new NanoHTTPD.Response(Status.OK, mimeType,
-								answer);
-					}
-					else
-					{
-						response = new NanoHTTPD.Response(Status.NOT_FOUND,
-								NanoHTTPD.MIME_HTML, "Page Not Found");
-					}
-
-					break;
 			}
 		}
 
 		return response;
 	}
 
-	// -------------------------------------------------
-	// Api methods
-
-	private Response ajax_app_text(Map<String, String> parameters)
+	@Override
+	public Response testAjax(Method method, Map<String, String> parameters)
 	{
 		NanoHTTPD.Response response = new NanoHTTPD.Response(
 				Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "BAD_REQUEST");
 
-		if (parameters != null)
+		if (method == Method.POST && parameters != null)
 		{
-			if (parameters.containsKey(AJAX_APP_FROM_ANDROID_PARAM))
+			if (parameters.containsKey(AppServerRestApi.API_TEST_AJAX_FROM_ANDROID_PARAM))
 			{
 				String text = "hello world from android";
 				response = new NanoHTTPD.Response(Status.OK,
 						NanoHTTPD.MIME_PLAINTEXT, text);
 			}
-			else if (parameters.containsKey(AJAX_APP_TO_ANDROID_PARAM))
+			else if (parameters.containsKey(AppServerRestApi.API_TEST_AJAX_TO_ANDROID_PARAM))
 			{
-				String txt = parameters.get(AJAX_APP_TO_ANDROID_PARAM);
+				String txt = parameters.get(AppServerRestApi.API_TEST_AJAX_TO_ANDROID_PARAM);
 				Message msg = new Message();
 				msg.obj = txt;
 				handler.sendMessage(msg);
@@ -307,22 +189,23 @@ public class HttpServerService extends Service
 		return response;
 	}
 
-	private Response ajax_app_stream(Map<String, String> parameters)
+	@Override
+	public Response testStream(Method method, Map<String, String> parameters)
 	{
 		NanoHTTPD.Response response = new NanoHTTPD.Response(
 				Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "BAD_REQUEST");
-		if (parameters != null)
+		if (method == Method.GET && parameters != null)
 		{
-			if (parameters.containsKey(AJAX_APP_FILE_NAME_PARAM))
+			if (parameters.containsKey(AppServerRestApi.API_TEST_STREAM_FILE_NAME_PARAM))
 			{
-				String fileName = parameters.get(AJAX_APP_FILE_NAME_PARAM);
+				String fileName = parameters.get(AppServerRestApi.API_TEST_STREAM_FILE_NAME_PARAM);
 				InputStream is;
 				try
 				{
-					is = getFileFromAssets(fileName);
-					String fileMimeType = getMimeType(fileName);
-					response = new NanoHTTPD.Response(Status.OK,
-							fileMimeType, is);
+					is = Utils.getFileFromAssets(this,fileName);
+					String fileMimeType = Utils.getMimeType(fileName);
+					response = new NanoHTTPD.Response(Status.OK, fileMimeType,
+							is);
 				}
 				catch (IOException e)
 				{
@@ -331,6 +214,13 @@ public class HttpServerService extends Service
 			}
 		}
 		return response;
+	}
+
+	@Override
+	public Response listEntries(Method method, Map<String, String> parameters)
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	// -------------------------------------------------
