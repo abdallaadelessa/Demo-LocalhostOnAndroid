@@ -1,4 +1,4 @@
-package com.example.localservertest;
+package com.example.localservertest.controllers;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,7 +6,10 @@ import android.support.v7.app.ActionBarActivity;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ToggleButton;
-import com.example.localservertest.helpers.HttpServerService;
+import com.example.localservertest.R;
+import com.example.localservertest.R.id;
+import com.example.localservertest.R.layout;
+import com.example.localservertest.controllers.service.HttpServerService;
 
 public class MainActivity extends ActionBarActivity
 {

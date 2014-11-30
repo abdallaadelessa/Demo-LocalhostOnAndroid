@@ -1,4 +1,4 @@
-package com.example.localservertest.helpers;
+package com.example.localservertest.controllers.service;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -17,6 +17,7 @@ import android.os.Message;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
+import com.example.localservertest.helpers.NanoHTTPD;
 import com.example.localservertest.helpers.NanoHTTPD.Method;
 import com.example.localservertest.helpers.NanoHTTPD.Response;
 import com.example.localservertest.helpers.NanoHTTPD.Response.Status;

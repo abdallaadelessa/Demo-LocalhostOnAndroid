@@ -17,12 +17,12 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <service
-            android:name="com.example.localservertest.helpers.HttpServerService"
+            android:name="com.example.localservertest.controllers.service.HttpServerService"
             android:exported="true" >
         </service>
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.localservertest.controllers.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
