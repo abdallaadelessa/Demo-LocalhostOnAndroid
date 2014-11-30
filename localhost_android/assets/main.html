@@ -9,13 +9,19 @@
 
 
 <script>
+	var pass = Utils.getPassword();
+	if (pass == undefined) 
+	{
+		window.location.href = "/login.html";
+	}
+	
+   /*
+	* On Ready
+	*/
 	$(document).ready(function() {
-		var pass = Utils.getPassword();
-		if (pass == undefined) {
-			window.location.href = "/login.html";
-		}
+		fillList();
 	});
-
+	
 	/*
 	 * Methods
 	 */
@@ -32,6 +38,16 @@
 			from_android : 'true'
 		}, function(data, status) {
 			alert(data + "");
+		});
+	}
+
+	function fillList() {
+		$.post("list_entries_url", function(data, status) {
+			var list = JSON.parse(data);
+			$.each(list, function(i, obj) {
+				$('#ul_list')
+						.append('<li>' + obj.id + '-' + obj.name + '</li>');
+			});
 		});
 	}
 
@@ -63,13 +79,19 @@
 				<td><input type="button" value="get data from android"
 					onclick="getMessageFromAndroid();"></td>
 			</tr>
+
+			<tr>
+				<td>
+					<ul id="ul_list">
+					</ul>
+				</td>
+			</tr>
+
 			<tr>
 				<td><a href="" onclick="logout();">Logout</a></td>
 			</tr>
 		</table>
 	</form>
-
-
 
 </body>
 

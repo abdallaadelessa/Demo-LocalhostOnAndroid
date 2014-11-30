@@ -69,6 +69,11 @@ public class AppServerRestApi
 					response = api.login(method, parameters);
 					break;
 				}
+				case API_LIST_ENTRIES_URL:
+				{
+					response = api.listEntries(method, parameters);
+					break;
+				}
 				default:
 					String answer = Utils.convertHtmlPageToString(cxt,
 							pageToLoad);
@@ -117,5 +122,8 @@ public class AppServerRestApi
 	// Test Stream
 	private static final String API_TEST_STREAM_URL = "ajax_app_stream";
 	public static final String API_TEST_STREAM_FILE_NAME_PARAM = "filename";
+	// ----->
+	// list entries
+	private static final String API_LIST_ENTRIES_URL = "list_entries_url";
 	// ----->
 }

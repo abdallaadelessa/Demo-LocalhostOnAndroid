@@ -2,6 +2,8 @@ package com.example.localservertest.controllers.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import android.app.Service;
 import android.content.Intent;
@@ -13,12 +15,13 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 import com.example.localservertest.helpers.AppServerRestApi;
-import com.example.localservertest.helpers.Utils;
 import com.example.localservertest.helpers.AppServerRestApi.AppServerRestApiInterface;
 import com.example.localservertest.helpers.NanoHTTPD;
 import com.example.localservertest.helpers.NanoHTTPD.Method;
 import com.example.localservertest.helpers.NanoHTTPD.Response;
 import com.example.localservertest.helpers.NanoHTTPD.Response.Status;
+import com.example.localservertest.helpers.Utils;
+import com.google.gson.Gson;
 
 public class HttpServerService extends Service implements
 		AppServerRestApiInterface
@@ -130,30 +133,34 @@ public class HttpServerService extends Service implements
 				Map<String, String> files)
 		{
 			Log.d(TAG, uri);
-			
-			return appServerRestApi.handleRequest(HttpServerService.this, uri, method,
-					header, parameters, files);
+
+			return appServerRestApi.handleRequest(HttpServerService.this, uri,
+					method, header, parameters, files);
 		}
 
 	}
+
 	// -------------------------------------------------
 	// Api methods
 
 	@Override
 	public Response login(Method method, Map<String, String> parameters)
 	{
-		NanoHTTPD.Response response = new NanoHTTPD.Response(
-				Status.OK, NanoHTTPD.MIME_PLAINTEXT, "false");
+		NanoHTTPD.Response response = new NanoHTTPD.Response(Status.OK,
+				NanoHTTPD.MIME_PLAINTEXT, "false");
 
 		if (method == Method.POST && parameters != null)
 		{
-			if (parameters.containsKey(AppServerRestApi.API_LOGIN_PASSWORD_PARAM))
+			if (parameters
+					.containsKey(AppServerRestApi.API_LOGIN_PASSWORD_PARAM))
 			{
-				String password = parameters.get(AppServerRestApi.API_LOGIN_PASSWORD_PARAM);
-				if(password!=null&&password.equalsIgnoreCase("abdalla123#"))
+				String password = parameters
+						.get(AppServerRestApi.API_LOGIN_PASSWORD_PARAM);
+				if (password != null
+						&& password.equalsIgnoreCase("abdalla123#"))
 				{
 					response = new NanoHTTPD.Response(Status.OK,
-							NanoHTTPD.MIME_PLAINTEXT,"true");
+							NanoHTTPD.MIME_PLAINTEXT, "true");
 				}
 			}
 		}
@@ -169,15 +176,18 @@ public class HttpServerService extends Service implements
 
 		if (method == Method.POST && parameters != null)
 		{
-			if (parameters.containsKey(AppServerRestApi.API_TEST_AJAX_FROM_ANDROID_PARAM))
+			if (parameters
+					.containsKey(AppServerRestApi.API_TEST_AJAX_FROM_ANDROID_PARAM))
 			{
 				String text = "hello world from android";
 				response = new NanoHTTPD.Response(Status.OK,
 						NanoHTTPD.MIME_PLAINTEXT, text);
 			}
-			else if (parameters.containsKey(AppServerRestApi.API_TEST_AJAX_TO_ANDROID_PARAM))
+			else if (parameters
+					.containsKey(AppServerRestApi.API_TEST_AJAX_TO_ANDROID_PARAM))
 			{
-				String txt = parameters.get(AppServerRestApi.API_TEST_AJAX_TO_ANDROID_PARAM);
+				String txt = parameters
+						.get(AppServerRestApi.API_TEST_AJAX_TO_ANDROID_PARAM);
 				Message msg = new Message();
 				msg.obj = txt;
 				handler.sendMessage(msg);
@@ -196,13 +206,15 @@ public class HttpServerService extends Service implements
 				Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "BAD_REQUEST");
 		if (method == Method.GET && parameters != null)
 		{
-			if (parameters.containsKey(AppServerRestApi.API_TEST_STREAM_FILE_NAME_PARAM))
+			if (parameters
+					.containsKey(AppServerRestApi.API_TEST_STREAM_FILE_NAME_PARAM))
 			{
-				String fileName = parameters.get(AppServerRestApi.API_TEST_STREAM_FILE_NAME_PARAM);
+				String fileName = parameters
+						.get(AppServerRestApi.API_TEST_STREAM_FILE_NAME_PARAM);
 				InputStream is;
 				try
 				{
-					is = Utils.getFileFromAssets(this,fileName);
+					is = Utils.getFileFromAssets(this, fileName);
 					String fileMimeType = Utils.getMimeType(fileName);
 					response = new NanoHTTPD.Response(Status.OK, fileMimeType,
 							is);
@@ -219,9 +231,37 @@ public class HttpServerService extends Service implements
 	@Override
 	public Response listEntries(Method method, Map<String, String> parameters)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		NanoHTTPD.Response response = new NanoHTTPD.Response(
+				Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "BAD_REQUEST");
+
+		if (method == Method.POST)
+		{
+			List<ListModel> models = new ArrayList<ListModel>();
+			models.add(new ListModel(1, "tea"));
+			models.add(new ListModel(2, "coffee"));
+			models.add(new ListModel(3, "juice"));
+			models.add(new ListModel(4, "ice cream"));
+			Gson gson = new Gson();
+			String json = gson.toJson(models);
+			response = new NanoHTTPD.Response(Status.OK,
+					NanoHTTPD.MIME_PLAINTEXT, json);
+		}
+		return response;
 	}
 
 	// -------------------------------------------------
+
+	class ListModel
+	{
+		int id;
+		String name;
+
+		private ListModel(int id, String name)
+		{
+			super();
+			this.id = id;
+			this.name = name;
+		}
+
+	}
 }
