@@ -9,16 +9,14 @@
 
 <script>
 	/*
-	 * Methods
+	 * 
 	 */
-	$(document).ready(function() {
-		var pass = Utils.getPassword();
-		if (pass == undefined) {
-			window.location.href = "/login.html";
-		} else {
-			window.location.href = "/main.html";
-		}
-	});
+	var pass = Utils.getPassword();
+	if (pass == undefined) {
+		window.location.href = "/login.html";
+	} else {
+		window.location.href = "/main.html";
+	}
 </script>
 
 </head>
