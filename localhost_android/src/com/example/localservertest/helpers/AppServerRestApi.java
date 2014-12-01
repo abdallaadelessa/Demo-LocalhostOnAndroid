@@ -58,7 +58,8 @@ public class AppServerRestApi
 		if (pageToLoad != null)
 		{
 			// Authenticate
-			if (AUTHENTICATED_APIS_AND_URLS.contains(pageToLoad) && !userAuthenticated)
+			if (AUTHENTICATED_APIS_AND_URLS.contains(pageToLoad)
+					&& !userAuthenticated)
 			{
 				if (isHtmlPage(pageToLoad))
 				{
@@ -69,10 +70,7 @@ public class AppServerRestApi
 					return getUnAuthenticatedResponse();
 				}
 			}
-			else
-			{
-				response = route(cxt, pageToLoad, header, method, parameters);	
-			}
+			response = route(cxt, pageToLoad, header, method, parameters);
 		}
 		return response;
 	}
