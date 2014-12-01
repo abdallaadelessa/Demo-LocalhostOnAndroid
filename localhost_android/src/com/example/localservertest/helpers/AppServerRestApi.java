@@ -30,8 +30,8 @@ public class AppServerRestApi
 	{
 		if (api == null || Utils.isStringEmpty(pageToLoad))
 		{
-			return RESPONSE_TYPE.getErrorResponse(cxt,
-					RESPONSE_TYPE.INTERNAL_ERROR);
+			return RESPONSE_ACTION.getErrorResponse(cxt,
+					RESPONSE_ACTION.INTERNAL_ERROR);
 		}
 		else
 		{
@@ -67,8 +67,8 @@ public class AppServerRestApi
 				}
 				else
 				{
-					return RESPONSE_TYPE.getErrorResponse(cxt,
-							RESPONSE_TYPE.NOT_AUTHENTICATED);
+					return RESPONSE_ACTION.getErrorResponse(cxt,
+							RESPONSE_ACTION.NOT_AUTHENTICATED);
 				}
 			}
 			response = route(cxt, pageToLoad, header, method, parameters);
@@ -114,8 +114,8 @@ public class AppServerRestApi
 				}
 				else
 				{
-					response = RESPONSE_TYPE.getErrorResponse(cxt,
-							RESPONSE_TYPE.NOT_FOUND);
+					response = RESPONSE_ACTION.getErrorResponse(cxt,
+							RESPONSE_ACTION.NOT_FOUND);
 				}
 
 				break;
@@ -123,8 +123,8 @@ public class AppServerRestApi
 
 		if (response == null)
 		{
-			response = RESPONSE_TYPE.getErrorResponse(cxt,
-					RESPONSE_TYPE.INTERNAL_ERROR);
+			response = RESPONSE_ACTION.getErrorResponse(cxt,
+					RESPONSE_ACTION.INTERNAL_ERROR);
 		}
 
 		return response;
@@ -136,8 +136,8 @@ public class AppServerRestApi
 	private Response login(Context cxt, Method method,
 			Map<String, String> header, Map<String, String> parameters)
 	{
-		NanoHTTPD.Response response = RESPONSE_TYPE.getErrorResponse(cxt,
-				RESPONSE_TYPE.NOT_FOUND);
+		NanoHTTPD.Response response = RESPONSE_ACTION.getErrorResponse(cxt,
+				RESPONSE_ACTION.NOT_FOUND);
 
 		if (method == Method.POST && parameters != null)
 		{
@@ -150,8 +150,8 @@ public class AppServerRestApi
 					if (SessionUser.checkIp(onlineUser, remoteIp, false))
 					{
 						// another user has logged in
-						response = RESPONSE_TYPE.getErrorResponse(cxt,
-								RESPONSE_TYPE.ANOTHER_USER_LOGGED);
+						response = RESPONSE_ACTION.getErrorResponse(cxt,
+								RESPONSE_ACTION.ANOTHER_USER_LOGGED);
 					}
 					else
 					{
@@ -172,8 +172,8 @@ public class AppServerRestApi
 					else
 					{
 						// Wrong password
-						response = RESPONSE_TYPE.getErrorResponse(cxt,
-								RESPONSE_TYPE.PASSWORD_WRONG);
+						response = RESPONSE_ACTION.getErrorResponse(cxt,
+								RESPONSE_ACTION.PASSWORD_WRONG);
 					}
 				}
 			}
@@ -215,8 +215,8 @@ public class AppServerRestApi
 	public NanoHTTPD.Response checkInOnlineUser(Context cxt, String remoteIp)
 	{
 		onlineUser = new SessionUser(remoteIp, System.currentTimeMillis());
-		return RESPONSE_TYPE
-				.getErrorResponse(cxt, RESPONSE_TYPE.PASSWORD_RIGHT);
+		return RESPONSE_ACTION
+				.getErrorResponse(cxt, RESPONSE_ACTION.PASSWORD_RIGHT);
 	}
 
 	public boolean isHtmlPage(String pageToLoad)
@@ -276,11 +276,11 @@ public class AppServerRestApi
 
 	}
 
-	public enum RESPONSE_TYPE
+	public enum RESPONSE_ACTION
 	{
 		PASSWORD_RIGHT, PASSWORD_WRONG, NOT_AUTHENTICATED, ANOTHER_USER_LOGGED, NOT_FOUND, INTERNAL_ERROR;
 
-		public static Response getErrorResponse(Context cxt, RESPONSE_TYPE error)
+		public static Response getErrorResponse(Context cxt, RESPONSE_ACTION error)
 		{
 			Response response = null;
 
@@ -310,16 +310,17 @@ public class AppServerRestApi
 							ResponseData.sendResponse(false,
 									"Another device has logged in"));
 					break;
+					
+				//----------> Html Mime Type
+					
 				case INTERNAL_ERROR:
 					response = new NanoHTTPD.Response(Status.INTERNAL_ERROR,
-							NanoHTTPD.MIME_HTML, ResponseData.sendResponse(
-									false, "Internal Error"));
+							NanoHTTPD.MIME_HTML,"Internal Error");
 					break;
 
 				case NOT_FOUND:
 					response = new NanoHTTPD.Response(Status.NOT_FOUND,
-							NanoHTTPD.MIME_HTML, ResponseData.sendResponse(
-									false, "Page Not Found"));
+							NanoHTTPD.MIME_HTML,"Page Not Found");
 					break;
 				default:
 					break;
