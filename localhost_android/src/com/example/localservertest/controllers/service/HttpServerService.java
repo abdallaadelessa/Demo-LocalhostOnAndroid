@@ -31,7 +31,8 @@ public class HttpServerService extends Service implements
 	private static final int PORT = 8080;
 	private WebServer server;
 	private Handler handler;
-
+	// ----------------------------------------------
+	
 	@Override
 	public IBinder onBind(Intent intent)
 	{
@@ -164,7 +165,6 @@ public class HttpServerService extends Service implements
 				}
 			}
 		}
-
 		return response;
 	}
 
