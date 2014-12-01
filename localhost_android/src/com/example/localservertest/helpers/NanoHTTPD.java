@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
+import android.util.Log;
 
 /**
  * A simple, tiny, nicely embeddable HTTP server in Java
@@ -188,6 +189,7 @@ public abstract class NanoHTTPD {
                             }
                         });
                     } catch (IOException e) {
+                    	Log.i("DEBUG", e.getMessage());
                     }
                 } while (!myServerSocket.isClosed());
             }

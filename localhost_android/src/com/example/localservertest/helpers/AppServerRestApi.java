@@ -1,6 +1,5 @@
 package com.example.localservertest.helpers;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +28,7 @@ public class AppServerRestApi
 			Method method, Map<String, String> header,
 			Map<String, String> parameters, Map<String, String> files)
 	{
-		if (api == null)
+		if (api == null || (pageToLoad == null || pageToLoad.length() == 0))
 		{
 			return new NanoHTTPD.Response(Status.INTERNAL_ERROR,
 					NanoHTTPD.MIME_HTML, "Internal Error");
@@ -54,48 +53,42 @@ public class AppServerRestApi
 			Map<String, String> header, Method method,
 			Map<String, String> parameters)
 	{
-		NanoHTTPD.Response response = getUnAuthenticatedResponse();
-
-		boolean isAuth = isUserAuthenticated(header);
-
+		boolean userAuthenticated = isUserAuthenticated(header);
+		NanoHTTPD.Response response = null;
 		if (pageToLoad != null)
 		{
-			if (pageToLoad.equals(API_LOGIN_URL))
+			// Authenticate
+			if (AUTHENTICATED_APIS_AND_URLS.contains(pageToLoad) && !userAuthenticated)
 			{
-				response = login(method, header, parameters);
+				if (isHtmlPage(pageToLoad))
+				{
+					pageToLoad = LOGIN_HTML;
+				}
+				else
+				{
+					return getUnAuthenticatedResponse();
+				}
 			}
 			else
 			{
-				// Authenticate
-				if (AUTHENTICATED_URLS.contains(pageToLoad))
-				{
-					if (!isAuth)
-					{
-						if (isHtmlPage(pageToLoad))
-						{
-							pageToLoad = LOGIN_HTML;
-						}
-						else
-						{
-							return getUnAuthenticatedResponse();
-						}
-					}
-				}
-
-				response = route(cxt, pageToLoad, header, method, parameters);
+				response = route(cxt, pageToLoad, header, method, parameters);	
 			}
-
 		}
 		return response;
 	}
 
-	public NanoHTTPD.Response route(Context cxt, String pageToLoad,
+	private NanoHTTPD.Response route(Context cxt, String pageToLoad,
 			Map<String, String> header, Method method,
 			Map<String, String> parameters)
 	{
 		NanoHTTPD.Response response;
 		switch (pageToLoad)
 		{
+			case API_LOGIN_URL:
+			{
+				response = login(method, header, parameters);
+				break;
+			}
 			case API_TEST_AJAX_URL:
 			{
 				response = api.testAjax(method, header, parameters);
@@ -143,7 +136,7 @@ public class AppServerRestApi
 		if (method == Method.POST && parameters != null)
 		{
 			if (parameters
-					.containsKey(AppServerRestApi.API_LOGIN_PASSWORD_PARAM))
+					.containsKey(AppServerRestApi.PARAM_API_LOGIN_PASSWORD))
 			{
 				String remoteIp = header.get(HTTPSession.REMOTE_ADDR);
 				if (onlineUser != null)
@@ -163,7 +156,7 @@ public class AppServerRestApi
 				else
 				{
 					String password = parameters
-							.get(AppServerRestApi.API_LOGIN_PASSWORD_PARAM);
+							.get(AppServerRestApi.PARAM_API_LOGIN_PASSWORD);
 					if (password != null
 							&& password.equalsIgnoreCase("abdalla123#"))
 					{
@@ -190,7 +183,7 @@ public class AppServerRestApi
 		{
 			// Check Date
 			long now = System.currentTimeMillis();
-			long lastAccess = onlineUser.lastAccessDate;
+			long lastAccess = onlineUser.getLastAccessDate();
 			int diffInSeconds = (int) ((now - lastAccess) / 1000);
 			if (diffInSeconds < SESSION_TIEMOUT_SECS)
 			{
@@ -232,6 +225,7 @@ public class AppServerRestApi
 	{
 		return pageToLoad.endsWith(".html");
 	}
+
 	// -------------------------------------
 
 	public interface AppServerRestApiInterface
@@ -246,7 +240,7 @@ public class AppServerRestApi
 				Map<String, String> parameters);
 	}
 
-	static class SessionUser
+	private static class SessionUser
 	{
 		private String ip;
 		private long lastAccessDate;
@@ -261,11 +255,6 @@ public class AppServerRestApi
 		public String getIp()
 		{
 			return ip;
-		}
-
-		public void setIp(String ip)
-		{
-			this.ip = ip;
 		}
 
 		public long getLastAccessDate()
@@ -292,7 +281,7 @@ public class AppServerRestApi
 	// ---------------------------------------> Apis
 	// Login
 	private static final String API_LOGIN_URL = "api_login_url";
-	public static final String API_LOGIN_PASSWORD_PARAM = "api_login_param_password";
+	public static final String PARAM_API_LOGIN_PASSWORD = "api_login_param_password";
 	// Test Ajax
 	private static final String API_TEST_AJAX_URL = "ajax_app";
 	public static final String PARAM_API_TEST_AJAX_TO_ANDROID = "to_android";
@@ -303,13 +292,12 @@ public class AppServerRestApi
 	// list entries
 	private static final String API_LIST_ENTRIES_URL = "list_entries_url";
 	// ---------------------------------------> Pages
-	// ---------------------------------------> Apis
 	private static final String MAIN_PAGE = "index.html";
+	private static final String LOGIN_HTML = "login.html";
 	// ----------------------------------------
 
-	private static final String LOGIN_HTML = "login.html";
-	private static final List<String> AUTHENTICATED_URLS = Arrays.asList(
-			API_TEST_AJAX_URL, API_TEST_STREAM_URL, API_LIST_ENTRIES_URL,
-			MAIN_PAGE);
+	private static final List<String> AUTHENTICATED_APIS_AND_URLS = Arrays
+			.asList(API_TEST_AJAX_URL, API_TEST_STREAM_URL,
+					API_LIST_ENTRIES_URL, MAIN_PAGE);
 
 }
