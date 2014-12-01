@@ -46,7 +46,7 @@
 			var list = JSON.parse(data);
 			$.each(list, function(i, obj) {
 				$('#ul_list')
-						.append('<li>' + obj.id + '-' + obj.name + '</li>');
+						.append("<li id=\""+obj.id+"\">"+obj.name+"</li>");
 			});
 		});
 	}
