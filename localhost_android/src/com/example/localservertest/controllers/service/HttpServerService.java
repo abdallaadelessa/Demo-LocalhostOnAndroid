@@ -16,6 +16,7 @@ import android.util.Log;
 import android.widget.Toast;
 import com.example.localservertest.helpers.AppServerRestApi;
 import com.example.localservertest.helpers.AppServerRestApi.AppServerRestApiInterface;
+import com.example.localservertest.helpers.AppServerRestApi.ResponseData;
 import com.example.localservertest.helpers.NanoHTTPD;
 import com.example.localservertest.helpers.NanoHTTPD.Method;
 import com.example.localservertest.helpers.NanoHTTPD.Response;
@@ -145,43 +146,11 @@ public class HttpServerService extends Service implements
 	// Api methods
 
 	@Override
-	public Response testAjax(Method method, Map<String, String> header,
-				Map<String, String> parameters)
-	{
-		NanoHTTPD.Response response = new NanoHTTPD.Response(
-				Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "BAD_REQUEST");
-
-		if (method == Method.POST && parameters != null)
-		{
-			if (parameters
-					.containsKey(AppServerRestApi.PARAM_API_TEST_AJAX_FROM_ANDROID))
-			{
-				String text = "hello world from android";
-				response = new NanoHTTPD.Response(Status.OK,
-						NanoHTTPD.MIME_PLAINTEXT, text);
-			}
-			else if (parameters
-					.containsKey(AppServerRestApi.PARAM_API_TEST_AJAX_TO_ANDROID))
-			{
-				String txt = parameters
-						.get(AppServerRestApi.PARAM_API_TEST_AJAX_TO_ANDROID);
-				Message msg = new Message();
-				msg.obj = txt;
-				handler.sendMessage(msg);
-				response = new NanoHTTPD.Response(Status.OK,
-						NanoHTTPD.MIME_PLAINTEXT, "success");
-			}
-		}
-
-		return response;
-	}
-
-	@Override
 	public Response testStream(Method method, Map<String, String> header,
 				Map<String, String> parameters)
 	{
-		NanoHTTPD.Response response = new NanoHTTPD.Response(
-				Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "BAD_REQUEST");
+		NanoHTTPD.Response response = null;
+		
 		if (method == Method.GET && parameters != null)
 		{
 			if (parameters
@@ -205,13 +174,46 @@ public class HttpServerService extends Service implements
 		}
 		return response;
 	}
+	
+	@Override
+	public Response testAjax(Method method, Map<String, String> header,
+				Map<String, String> parameters)
+	{
+		NanoHTTPD.Response response = null;
+
+		if (method == Method.POST && parameters != null)
+		{
+			if (parameters
+					.containsKey(AppServerRestApi.PARAM_API_TEST_AJAX_FROM_ANDROID))
+			{
+				String sendResponseText = ResponseData.sendResponseText(true, "Text From Android");
+				response = new NanoHTTPD.Response(Status.OK,
+						NanoHTTPD.MIME_PLAINTEXT,sendResponseText);
+			}
+			else if (parameters
+					.containsKey(AppServerRestApi.PARAM_API_TEST_AJAX_TO_ANDROID))
+			{
+				String txt = parameters
+						.get(AppServerRestApi.PARAM_API_TEST_AJAX_TO_ANDROID);
+				Message msg = new Message();
+				msg.obj = txt;
+				handler.sendMessage(msg);
+				
+				response = new NanoHTTPD.Response(Status.OK,
+						NanoHTTPD.MIME_PLAINTEXT, ResponseData.sendResponseText(true,"success"));
+			}
+		}
+
+		return response;
+	}
+
+
 
 	@Override
 	public Response listEntries(Method method, Map<String, String> header,
 				Map<String, String> parameters)
 	{
-		NanoHTTPD.Response response = new NanoHTTPD.Response(
-				Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "BAD_REQUEST");
+		NanoHTTPD.Response response = null;
 
 		if (method == Method.POST)
 		{
@@ -221,9 +223,10 @@ public class HttpServerService extends Service implements
 			models.add(new ListModel(3, "juice"));
 			models.add(new ListModel(4, "ice cream"));
 			Gson gson = new Gson();
-			String json = gson.toJson(models);
+			String data = gson.toJson(models);
+
 			response = new NanoHTTPD.Response(Status.OK,
-					NanoHTTPD.MIME_PLAINTEXT, json);
+					NanoHTTPD.MIME_PLAINTEXT,ResponseData.sendResponseText(true,data));
 		}
 		return response;
 	}

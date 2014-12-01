@@ -8,22 +8,27 @@
 <script src="js/Utils.js"></script>
 
 
-<script>	
-   /*
-	* On Ready
-	*/
+<script>
+	/*
+	 * On Ready
+	 */
 	$(document).ready(function() {
 		fillList();
 	});
-	
+
 	/*
 	 * Methods
 	 */
-
 	function sendMessageToAndroid() {
 		var txt = $("#txtfield").val();
 		$.post("ajax_app", {
 			to_android : txt
+		}, function(data, status) {
+			var respData = JSON.parse(data);
+			if (!respData.valid) {
+				// not valid
+				alert(respData.data);
+			}
 		});
 	}
 
@@ -31,17 +36,27 @@
 		$.post("ajax_app", {
 			from_android : 'true'
 		}, function(data, status) {
-			alert(data + "");
+			var respData = JSON.parse(data);
+			alert(respData.data);
 		});
 	}
 
 	function fillList() {
 		$.post("list_entries_url", function(data, status) {
-			var list = JSON.parse(data);
-			$.each(list, function(i, obj) {
-				$('#ul_list')
-						.append("<li id=\""+obj.id+"\">"+obj.name+"</li>");
-			});
+
+			var respData = JSON.parse(data);
+
+			if (respData.valid) {
+				// Valid
+				var list = JSON.parse(respData.data);
+				$.each(list, function(i, obj) {
+					$('#ul_list').append(
+							"<li id=\""+obj.id+"\">" + obj.name + "</li>");
+				});
+			} else {
+				alert(respData.data);
+			}
+
 		});
 	}
 

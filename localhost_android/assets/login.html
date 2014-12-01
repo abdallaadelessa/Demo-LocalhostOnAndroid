@@ -11,28 +11,27 @@
 	/*
 	 * Methods
 	 */
-	 
+
 	function login() {
 		var pass = $("#pass").val();
 
 		$.post("api_login_url", {
 			api_login_param_password : pass
-		}, function(data, status) 
-		{
-			if (data.indexOf("false") > -1)
+		}, function(data, status) {
+			var respData = JSON.parse(data);
+			
+			if (respData.valid) 
 			{
-				alert("Wrong password");
-			} 
-			else if (data.indexOf("true") > -1) 
-			{
-				// done redirect to index	
+				// Valid
 				Utils.savePassword(pass);
 				window.location.href = "/index.html";
-			}
-			else
+			} 
+			else 
 			{
-				alert(data);	
+				var data = respData.data;
+				alert(data);
 			}
+
 		});
 	}
 </script>
