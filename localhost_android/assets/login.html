@@ -11,28 +11,26 @@
 	/*
 	 * Methods
 	 */
+	var pass = Utils.getPassword();
+	if (pass != undefined) {
+		window.location.href = "/main.html";
+	}
 
-	function login() 
-	{
+	function login() {
 		var pass = $("#pass").val();
-		
-		$.post("api_login_url",
-		  {api_login_param_password : pass},
-		 function(data, status) 
-		{
-			if(data.indexOf("false") > -1)
-			{
+
+		$.post("api_login_url", {
+			api_login_param_password : pass
+		}, function(data, status) {
+			if (data.indexOf("false") > -1) {
 				alert("Wrong password");
-			}
-			else
-			{
+			} else {
 				// done redirect to index	
 				Utils.savePassword(pass);
 				window.location.href = "/index.html";
 			}
 		});
 	}
-
 </script>
 
 </head>
@@ -47,8 +45,7 @@
 			</tr>
 
 			<tr>
-				<td><input type="button" value="Login"
-					onclick="login();"></td>
+				<td><input type="button" value="Login" onclick="login();"></td>
 			</tr>
 		</table>
 	</form>
