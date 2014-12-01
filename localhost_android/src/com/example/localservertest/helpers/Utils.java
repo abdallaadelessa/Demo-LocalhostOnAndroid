@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Locale;
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
@@ -28,6 +29,11 @@ public class Utils
 			{
 				Log.i(LOG_TAG, msg);
 			}
+	}
+	
+	public static boolean isStringEmpty(CharSequence input)
+	{
+		return TextUtils.isEmpty(input);
 	}
 	
 	public static String getMimeType(String url)
