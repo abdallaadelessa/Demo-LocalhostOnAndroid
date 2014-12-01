@@ -1,5 +1,6 @@
 package com.example.localservertest.helpers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -11,9 +12,10 @@ import com.example.localservertest.helpers.NanoHTTPD.Response.Status;
 
 public class AppServerRestApi
 {
+	private static final String AUTH_MESSAGE = "Another device has logged in";
 	private static final int SESSION_TIEMOUT_SECS = 10;
 	private AppServerRestApiInterface api;
-	private OnlineUser onlineUser;
+	private SessionUser onlineUser;
 
 	public AppServerRestApi(AppServerRestApiInterface api)
 	{
@@ -42,74 +44,95 @@ public class AppServerRestApi
 			}
 		}
 
-		NanoHTTPD.Response response = handleUrl(cxt, pageToLoad, header,
+		NanoHTTPD.Response response = authenticateUrl(cxt, pageToLoad, header,
 				method, parameters);
 
 		return response;
 	}
 
-	private NanoHTTPD.Response handleUrl(Context cxt, String pageToLoad,
+	private NanoHTTPD.Response authenticateUrl(Context cxt, String pageToLoad,
 			Map<String, String> header, Method method,
 			Map<String, String> parameters)
 	{
-		NanoHTTPD.Response response = null;
+		NanoHTTPD.Response response = getUnAuthenticatedResponse();
+
+		boolean isAuth = isUserAuthenticated(header);
 
 		if (pageToLoad != null)
 		{
-			// Authenticate
-			if (!UNAUTHENTICATED_URLS.contains(pageToLoad))
+			if (pageToLoad.equals(API_LOGIN_URL))
 			{
-				if (!canMakeRequest(header))
+				response = login(method, header, parameters);
+			}
+			else
+			{
+				// Authenticate
+				if (AUTHENTICATED_URLS.contains(pageToLoad))
 				{
-					pageToLoad = LOGIN_HTML;
+					if (!isAuth)
+					{
+						if (isHtmlPage(pageToLoad))
+						{
+							pageToLoad = LOGIN_HTML;
+						}
+						else
+						{
+							return getUnAuthenticatedResponse();
+						}
+					}
 				}
+
+				response = route(cxt, pageToLoad, header, method, parameters);
 			}
 
-			// parameters
-			switch (pageToLoad)
-			{
-				case API_LOGIN_URL:
-				{
-					response = login(method, header, parameters);
-					break;
-				}
-				case API_TEST_AJAX_URL:
-				{
-					response = api.testAjax(method, header, parameters);
-					break;
-				}
-				case API_TEST_STREAM_URL:
-				{
-					response = api.testStream(method, header, parameters);
-					break;
-				}
-				case API_LIST_ENTRIES_URL:
-				{
-					response = api.listEntries(method, header, parameters);
-					break;
-				}
-				default:
-					String answer = Utils.convertHtmlPageToString(cxt,
-							pageToLoad);
-					if (answer != null)
-					{
-						String mimeType = Utils.getMimeType(pageToLoad);
-						response = new NanoHTTPD.Response(Status.OK, mimeType,
-								answer);
-					}
-					else
-					{
-						response = new NanoHTTPD.Response(Status.NOT_FOUND,
-								NanoHTTPD.MIME_HTML, "Page Not Found");
-					}
-
-					break;
-			}
 		}
 		return response;
 	}
 
-	// -------------------------------------
+	public NanoHTTPD.Response route(Context cxt, String pageToLoad,
+			Map<String, String> header, Method method,
+			Map<String, String> parameters)
+	{
+		NanoHTTPD.Response response;
+		switch (pageToLoad)
+		{
+			case API_TEST_AJAX_URL:
+			{
+				response = api.testAjax(method, header, parameters);
+				break;
+			}
+			case API_TEST_STREAM_URL:
+			{
+				response = api.testStream(method, header, parameters);
+				break;
+			}
+			case API_LIST_ENTRIES_URL:
+			{
+				response = api.listEntries(method, header, parameters);
+				break;
+			}
+			default:
+
+				String answer = Utils.convertHtmlPageToString(cxt, pageToLoad);
+				if (answer != null)
+				{
+					String mimeType = Utils.getMimeType(pageToLoad);
+					response = new NanoHTTPD.Response(Status.OK, mimeType,
+							answer);
+				}
+				else
+				{
+					response = new NanoHTTPD.Response(Status.NOT_FOUND,
+							NanoHTTPD.MIME_HTML, "Page Not Found");
+				}
+
+				break;
+		}
+		return response;
+	}
+
+	// --------------------------------------
+	// User Utils
 
 	private Response login(Method method, Map<String, String> header,
 			Map<String, String> parameters)
@@ -123,19 +146,19 @@ public class AppServerRestApi
 					.containsKey(AppServerRestApi.API_LOGIN_PASSWORD_PARAM))
 			{
 				String remoteIp = header.get(HTTPSession.REMOTE_ADDR);
-
-				Utils.log("remoteIp " + remoteIp);
 				if (onlineUser != null)
 				{
-					Utils.log("Online User Ip " + onlineUser.getIp());
-				}
-
-				if (onlineUser != null && onlineUser.getIp() != null
-						&& !onlineUser.getIp().equalsIgnoreCase(remoteIp))
-				{
-					response = new NanoHTTPD.Response(Status.OK,
-							NanoHTTPD.MIME_PLAINTEXT,
-							"Another device has logged in");
+					if (SessionUser.checkIp(onlineUser, remoteIp, false))
+					{
+						// another user has logged in
+						response = new NanoHTTPD.Response(Status.OK,
+								NanoHTTPD.MIME_PLAINTEXT, AUTH_MESSAGE);
+					}
+					else
+					{
+						// refresh session
+						response = checkInOnlineUser(remoteIp);
+					}
 				}
 				else
 				{
@@ -144,13 +167,12 @@ public class AppServerRestApi
 					if (password != null
 							&& password.equalsIgnoreCase("abdalla123#"))
 					{
-						onlineUser = new OnlineUser(remoteIp,
-								System.currentTimeMillis());
-						response = new NanoHTTPD.Response(Status.OK,
-								NanoHTTPD.MIME_PLAINTEXT, "true");
+						// Password is true
+						response = checkInOnlineUser(remoteIp);
 					}
 					else
 					{
+						// Wrong password
 						response = new NanoHTTPD.Response(Status.OK,
 								NanoHTTPD.MIME_PLAINTEXT, "false");
 					}
@@ -160,32 +182,56 @@ public class AppServerRestApi
 		return response;
 	}
 
-	private boolean canMakeRequest(Map<String, String> header)
+	private boolean isUserAuthenticated(Map<String, String> header)
 	{
-		boolean canMakeReq = false;
 		String remoteIp = header.get(HTTPSession.REMOTE_ADDR);
-		if (onlineUser != null)
+		boolean canMakeReq = false;
+		if (onlineUser != null && remoteIp != null)
 		{
-			String onlineUserIp = onlineUser.getIp();
-			if (onlineUserIp != null && onlineUserIp.equalsIgnoreCase(remoteIp))
+			// Check Date
+			long now = System.currentTimeMillis();
+			long lastAccess = onlineUser.lastAccessDate;
+			int diffInSeconds = (int) ((now - lastAccess) / 1000);
+			if (diffInSeconds < SESSION_TIEMOUT_SECS)
 			{
-				// Check Date
-				long now = System.currentTimeMillis();
-				long lastAccess = onlineUser.lastAccessDate;
-				int diffInSeconds = (int) ((now - lastAccess) / 1000);
-				if (diffInSeconds < SESSION_TIEMOUT_SECS)
+				boolean isTheSameIp = SessionUser.checkIp(onlineUser, remoteIp,
+						true);
+				if (isTheSameIp)
 				{
+					onlineUser.setLastAccessDate(now);
 					canMakeReq = true;
 				}
-				else
-				{
-					onlineUser = null;
-				}
+			}
+			else
+			{
+				onlineUser = null;
 			}
 		}
 		return canMakeReq;
 	}
 
+	// -------------------------------------
+	// helpers
+
+	public NanoHTTPD.Response checkInOnlineUser(String remoteIp)
+	{
+		NanoHTTPD.Response response;
+		onlineUser = new SessionUser(remoteIp, System.currentTimeMillis());
+		response = new NanoHTTPD.Response(Status.OK, NanoHTTPD.MIME_PLAINTEXT,
+				"true");
+		return response;
+	}
+
+	private Response getUnAuthenticatedResponse()
+	{
+		return new NanoHTTPD.Response(Status.OK, NanoHTTPD.MIME_PLAINTEXT,
+				AUTH_MESSAGE);
+	}
+
+	public boolean isHtmlPage(String pageToLoad)
+	{
+		return pageToLoad.endsWith(".html");
+	}
 	// -------------------------------------
 
 	public interface AppServerRestApiInterface
@@ -200,12 +246,12 @@ public class AppServerRestApi
 				Map<String, String> parameters);
 	}
 
-	class OnlineUser
+	static class SessionUser
 	{
 		private String ip;
 		private long lastAccessDate;
 
-		private OnlineUser(String ip, long lastAccessDate)
+		private SessionUser(String ip, long lastAccessDate)
 		{
 			super();
 			this.ip = ip;
@@ -232,44 +278,38 @@ public class AppServerRestApi
 			this.lastAccessDate = lastAccessDate;
 		}
 
-		@Override
-		public boolean equals(Object o)
+		public static boolean checkIp(SessionUser user, String remoteIp,
+				boolean theSame)
 		{
-			boolean isEqual = false;
-			if (o != null && o instanceof OnlineUser)
-			{
-				OnlineUser aUser = (OnlineUser) o;
-				String aUserIp = aUser.getIp();
-				if (getIp() != null && aUserIp.equalsIgnoreCase(getIp()))
-				{
-					isEqual = true;
-				}
-			}
-			return isEqual;
+			return user != null
+					&& user.getIp() != null
+					&& (theSame ? user.getIp().equalsIgnoreCase(remoteIp)
+							: !user.getIp().equalsIgnoreCase(remoteIp));
 		}
+
 	}
 
 	// ---------------------------------------> Apis
 	// Login
 	private static final String API_LOGIN_URL = "api_login_url";
 	public static final String API_LOGIN_PASSWORD_PARAM = "api_login_param_password";
-	// ----->
 	// Test Ajax
 	private static final String API_TEST_AJAX_URL = "ajax_app";
-	public static final String API_TEST_AJAX_TO_ANDROID_PARAM = "to_android";
-	public static final String API_TEST_AJAX_FROM_ANDROID_PARAM = "from_android";
-	// ---->
+	public static final String PARAM_API_TEST_AJAX_TO_ANDROID = "to_android";
+	public static final String PARAM_API_TEST_AJAX_FROM_ANDROID = "from_android";
 	// Test Stream
 	private static final String API_TEST_STREAM_URL = "ajax_app_stream";
-	public static final String API_TEST_STREAM_FILE_NAME_PARAM = "filename";
-	// ----->
+	public static final String PARAM_API_TEST_STREAM_FILE_NAME = "filename";
 	// list entries
 	private static final String API_LIST_ENTRIES_URL = "list_entries_url";
-	// ----->
-
+	// ---------------------------------------> Pages
 	// ---------------------------------------> Apis
 	private static final String MAIN_PAGE = "index.html";
+	// ----------------------------------------
+
 	private static final String LOGIN_HTML = "login.html";
-	private static final List<String> UNAUTHENTICATED_URLS = Arrays.asList(
-			LOGIN_HTML, API_LOGIN_URL);
+	private static final List<String> AUTHENTICATED_URLS = Arrays.asList(
+			API_TEST_AJAX_URL, API_TEST_STREAM_URL, API_LIST_ENTRIES_URL,
+			MAIN_PAGE);
+
 }

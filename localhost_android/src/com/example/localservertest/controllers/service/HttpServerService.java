@@ -154,17 +154,17 @@ public class HttpServerService extends Service implements
 		if (method == Method.POST && parameters != null)
 		{
 			if (parameters
-					.containsKey(AppServerRestApi.API_TEST_AJAX_FROM_ANDROID_PARAM))
+					.containsKey(AppServerRestApi.PARAM_API_TEST_AJAX_FROM_ANDROID))
 			{
 				String text = "hello world from android";
 				response = new NanoHTTPD.Response(Status.OK,
 						NanoHTTPD.MIME_PLAINTEXT, text);
 			}
 			else if (parameters
-					.containsKey(AppServerRestApi.API_TEST_AJAX_TO_ANDROID_PARAM))
+					.containsKey(AppServerRestApi.PARAM_API_TEST_AJAX_TO_ANDROID))
 			{
 				String txt = parameters
-						.get(AppServerRestApi.API_TEST_AJAX_TO_ANDROID_PARAM);
+						.get(AppServerRestApi.PARAM_API_TEST_AJAX_TO_ANDROID);
 				Message msg = new Message();
 				msg.obj = txt;
 				handler.sendMessage(msg);
@@ -185,10 +185,10 @@ public class HttpServerService extends Service implements
 		if (method == Method.GET && parameters != null)
 		{
 			if (parameters
-					.containsKey(AppServerRestApi.API_TEST_STREAM_FILE_NAME_PARAM))
+					.containsKey(AppServerRestApi.PARAM_API_TEST_STREAM_FILE_NAME))
 			{
 				String fileName = parameters
-						.get(AppServerRestApi.API_TEST_STREAM_FILE_NAME_PARAM);
+						.get(AppServerRestApi.PARAM_API_TEST_STREAM_FILE_NAME);
 				InputStream is;
 				try
 				{
