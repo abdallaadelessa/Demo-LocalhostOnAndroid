@@ -280,6 +280,7 @@ public abstract class NanoHTTPD {
      * @return HTTP response, see class Response for details
      */
     public Response serve(IHTTPSession session) {
+  	
         Map<String, String> files = new HashMap<String, String>();
         Method method = session.getMethod();
         if (Method.PUT.equals(method) || Method.POST.equals(method)) {
@@ -826,7 +827,9 @@ public abstract class NanoHTTPD {
     }
 
     protected class HTTPSession implements IHTTPSession {
-        public static final int BUFSIZE = 8192;
+        public static final String HTTP_CLIENT_IP = "http-client-ip";
+		public static final String REMOTE_ADDR = "remote-addr";
+		public static final int BUFSIZE = 8192;
         private final TempFileManager tempFileManager;
         private final OutputStream outputStream;
         private PushbackInputStream inputStream;
@@ -852,8 +855,8 @@ public abstract class NanoHTTPD {
             String remoteIp = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ? "127.0.0.1" : inetAddress.getHostAddress().toString();
             headers = new HashMap<String, String>();
 
-            headers.put("remote-addr", remoteIp);
-            headers.put("http-client-ip", remoteIp);
+            headers.put(REMOTE_ADDR, remoteIp);
+            headers.put(HTTP_CLIENT_IP, remoteIp);
         }
 
         @Override

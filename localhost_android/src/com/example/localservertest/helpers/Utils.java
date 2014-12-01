@@ -12,6 +12,24 @@ import android.webkit.MimeTypeMap;
 
 public class Utils
 {
+	private static final String LOG_TAG = "DEBUG";
+
+	/**
+	 * Log Msg to logcat
+	 */
+	public static void log(String msg)
+	{
+
+			if (msg == null)
+			{
+				Log.i(LOG_TAG, "--------------------------");
+			}
+			else
+			{
+				Log.i(LOG_TAG, msg);
+			}
+	}
+	
 	public static String getMimeType(String url)
 	{
 		String type = null;

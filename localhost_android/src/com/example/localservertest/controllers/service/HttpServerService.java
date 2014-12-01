@@ -145,31 +145,8 @@ public class HttpServerService extends Service implements
 	// Api methods
 
 	@Override
-	public Response login(Method method, Map<String, String> parameters)
-	{
-		NanoHTTPD.Response response = new NanoHTTPD.Response(Status.OK,
-				NanoHTTPD.MIME_PLAINTEXT, "false");
-
-		if (method == Method.POST && parameters != null)
-		{
-			if (parameters
-					.containsKey(AppServerRestApi.API_LOGIN_PASSWORD_PARAM))
-			{
-				String password = parameters
-						.get(AppServerRestApi.API_LOGIN_PASSWORD_PARAM);
-				if (password != null
-						&& password.equalsIgnoreCase("abdalla123#"))
-				{
-					response = new NanoHTTPD.Response(Status.OK,
-							NanoHTTPD.MIME_PLAINTEXT, "true");
-				}
-			}
-		}
-		return response;
-	}
-
-	@Override
-	public Response testAjax(Method method, Map<String, String> parameters)
+	public Response testAjax(Method method, Map<String, String> header,
+				Map<String, String> parameters)
 	{
 		NanoHTTPD.Response response = new NanoHTTPD.Response(
 				Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "BAD_REQUEST");
@@ -200,7 +177,8 @@ public class HttpServerService extends Service implements
 	}
 
 	@Override
-	public Response testStream(Method method, Map<String, String> parameters)
+	public Response testStream(Method method, Map<String, String> header,
+				Map<String, String> parameters)
 	{
 		NanoHTTPD.Response response = new NanoHTTPD.Response(
 				Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "BAD_REQUEST");
@@ -229,7 +207,8 @@ public class HttpServerService extends Service implements
 	}
 
 	@Override
-	public Response listEntries(Method method, Map<String, String> parameters)
+	public Response listEntries(Method method, Map<String, String> header,
+				Map<String, String> parameters)
 	{
 		NanoHTTPD.Response response = new NanoHTTPD.Response(
 				Status.BAD_REQUEST, NanoHTTPD.MIME_PLAINTEXT, "BAD_REQUEST");
@@ -251,6 +230,8 @@ public class HttpServerService extends Service implements
 
 	// -------------------------------------------------
 
+
+	
 	class ListModel
 	{
 		int id;

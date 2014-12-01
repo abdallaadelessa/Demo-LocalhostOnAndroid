@@ -21,13 +21,21 @@
 
 		$.post("api_login_url", {
 			api_login_param_password : pass
-		}, function(data, status) {
-			if (data.indexOf("false") > -1) {
+		}, function(data, status) 
+		{
+			if (data.indexOf("false") > -1)
+			{
 				alert("Wrong password");
-			} else {
+			} 
+			else if (data.indexOf("true") > -1) 
+			{
 				// done redirect to index	
 				Utils.savePassword(pass);
 				window.location.href = "/index.html";
+			}
+			else
+			{
+				alert(data);	
 			}
 		});
 	}
