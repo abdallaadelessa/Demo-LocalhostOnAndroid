@@ -289,36 +289,36 @@ public class AppServerRestApi
 				case PASSWORD_RIGHT:
 					response = new NanoHTTPD.Response(Status.OK,
 							NanoHTTPD.MIME_PLAINTEXT,
-							ResponseData.sendResponseText(true, "Success"));
+							ResponseData.sendResponse(true, "Success"));
 					break;
 				case PASSWORD_WRONG:
 					response = new NanoHTTPD.Response(Status.OK,
 							NanoHTTPD.MIME_PLAINTEXT,
-							ResponseData.sendResponseText(false,
+							ResponseData.sendResponse(false,
 									"Wrong Password"));
 					break;
 				case NOT_AUTHENTICATED:
 					response = new NanoHTTPD.Response(Status.OK,
 							NanoHTTPD.MIME_PLAINTEXT,
-							ResponseData.sendResponseText(false,
+							ResponseData.sendResponse(false,
 									"Session timeout"));
 					break;
 
 				case ANOTHER_USER_LOGGED:
 					response = new NanoHTTPD.Response(Status.OK,
 							NanoHTTPD.MIME_PLAINTEXT,
-							ResponseData.sendResponseText(false,
+							ResponseData.sendResponse(false,
 									"Another device has logged in"));
 					break;
 				case INTERNAL_ERROR:
 					response = new NanoHTTPD.Response(Status.INTERNAL_ERROR,
-							NanoHTTPD.MIME_HTML, ResponseData.sendResponseText(
+							NanoHTTPD.MIME_HTML, ResponseData.sendResponse(
 									false, "Internal Error"));
 					break;
 
 				case NOT_FOUND:
 					response = new NanoHTTPD.Response(Status.NOT_FOUND,
-							NanoHTTPD.MIME_HTML, ResponseData.sendResponseText(
+							NanoHTTPD.MIME_HTML, ResponseData.sendResponse(
 									false, "Page Not Found"));
 					break;
 				default:
@@ -334,7 +334,7 @@ public class AppServerRestApi
 		public boolean valid = true;
 		public String data = null;
 
-		public static String sendResponseText(boolean valid, String text)
+		public static String sendResponse(boolean valid, String text)
 		{
 			ResponseData respData = new ResponseData();
 			respData.valid = valid;

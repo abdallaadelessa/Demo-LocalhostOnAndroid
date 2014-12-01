@@ -186,7 +186,7 @@ public class HttpServerService extends Service implements
 			if (parameters
 					.containsKey(AppServerRestApi.PARAM_API_TEST_AJAX_FROM_ANDROID))
 			{
-				String sendResponseText = ResponseData.sendResponseText(true, "Text From Android");
+				String sendResponseText = ResponseData.sendResponse(true, "Text From Android");
 				response = new NanoHTTPD.Response(Status.OK,
 						NanoHTTPD.MIME_PLAINTEXT,sendResponseText);
 			}
@@ -200,14 +200,12 @@ public class HttpServerService extends Service implements
 				handler.sendMessage(msg);
 				
 				response = new NanoHTTPD.Response(Status.OK,
-						NanoHTTPD.MIME_PLAINTEXT, ResponseData.sendResponseText(true,"success"));
+						NanoHTTPD.MIME_PLAINTEXT, ResponseData.sendResponse(true,"success"));
 			}
 		}
 
 		return response;
 	}
-
-
 
 	@Override
 	public Response listEntries(Method method, Map<String, String> header,
@@ -226,7 +224,7 @@ public class HttpServerService extends Service implements
 			String data = gson.toJson(models);
 
 			response = new NanoHTTPD.Response(Status.OK,
-					NanoHTTPD.MIME_PLAINTEXT,ResponseData.sendResponseText(true,data));
+					NanoHTTPD.MIME_PLAINTEXT,ResponseData.sendResponse(true,data));
 		}
 		return response;
 	}
