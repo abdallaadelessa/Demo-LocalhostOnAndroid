@@ -13,7 +13,7 @@ import com.google.gson.Gson;
 public class AppServerRestApi
 {
 	private static final int SESSION_TIEMOUT_SECS = 10;
-	public static final String HEADER_PARAM_REMOTE_ADDR = "remote-addr";
+	public static final String HEADER_PARAM_REMOTE_ADDR = "host";
 	private AppServerRestApiInterface api;
 	private SessionUser onlineUser;
 

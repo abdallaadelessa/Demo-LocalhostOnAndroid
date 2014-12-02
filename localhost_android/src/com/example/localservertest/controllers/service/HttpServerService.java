@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.net.ssl.SSLServerSocketFactory;
 import android.app.Service;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
@@ -14,6 +15,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
+import com.example.localservertest.R;
 import com.example.localservertest.controllers.modelcontroller.AppServerRestApi;
 import com.example.localservertest.controllers.modelcontroller.AppServerRestApi.AppServerRestApiInterface;
 import com.example.localservertest.controllers.modelcontroller.AppServerRestApi.ResponseData;
@@ -32,8 +34,9 @@ public class HttpServerService extends Service implements
 	private static final int PORT = 8080;
 	private WebServer server;
 	private Handler handler;
+
 	// ----------------------------------------------
-	
+
 	@Override
 	public IBinder onBind(Intent intent)
 	{
@@ -88,19 +91,20 @@ public class HttpServerService extends Service implements
 			{
 				appServerRestApi = new AppServerRestApi(this);
 				server = new WebServer();
+				InputStream in = getResources().openRawResource(R.raw.clientkeystore);
+				SSLServerSocketFactory factory = NanoHTTPD
+						.makeSSLSocketFactory(in,"123456".toCharArray());
+				server.makeSecure(factory);
 				server.start();
-				WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
-				int ipAddress = wifiManager.getConnectionInfo().getIpAddress();
-				final String formatedIpAddress = String.format("%d.%d.%d.%d",
-						(ipAddress & 0xff), (ipAddress >> 8 & 0xff),
-						(ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
+
+				final String formatedIpAddress = getIpAddress();
 				String msg = "Please access! http://" + formatedIpAddress + ":"
 						+ PORT;
 				Toast.makeText(this, msg, 1000).show();
 				Log.d("DEBUG", msg);
 
 			}
-			catch (IOException ioe)
+			catch (Exception ioe)
 			{
 				Log.w("Httpd", "The server could not start.");
 			}
@@ -142,15 +146,25 @@ public class HttpServerService extends Service implements
 
 	}
 
+	public String getIpAddress()
+	{
+		WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+		int ipAddress = wifiManager.getConnectionInfo().getIpAddress();
+		final String formatedIpAddress = String.format("%d.%d.%d.%d",
+				(ipAddress & 0xff), (ipAddress >> 8 & 0xff),
+				(ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
+		return formatedIpAddress;
+	}
+
 	// -------------------------------------------------
 	// Api methods
 
 	@Override
 	public Response testStream(Method method, Map<String, String> header,
-				Map<String, String> parameters)
+			Map<String, String> parameters)
 	{
 		NanoHTTPD.Response response = null;
-		
+
 		if (method == Method.GET && parameters != null)
 		{
 			if (parameters
@@ -174,10 +188,10 @@ public class HttpServerService extends Service implements
 		}
 		return response;
 	}
-	
+
 	@Override
 	public Response testAjax(Method method, Map<String, String> header,
-				Map<String, String> parameters)
+			Map<String, String> parameters)
 	{
 		NanoHTTPD.Response response = null;
 
@@ -186,9 +200,10 @@ public class HttpServerService extends Service implements
 			if (parameters
 					.containsKey(AppServerRestApi.PARAM_API_TEST_AJAX_FROM_ANDROID))
 			{
-				String sendResponseText = ResponseData.sendResponse(true, "Text From Android");
+				String sendResponseText = ResponseData.sendResponse(true,
+						"Text From Android");
 				response = new NanoHTTPD.Response(Status.OK,
-						NanoHTTPD.MIME_PLAINTEXT,sendResponseText);
+						NanoHTTPD.MIME_PLAINTEXT, sendResponseText);
 			}
 			else if (parameters
 					.containsKey(AppServerRestApi.PARAM_API_TEST_AJAX_TO_ANDROID))
@@ -198,9 +213,10 @@ public class HttpServerService extends Service implements
 				Message msg = new Message();
 				msg.obj = txt;
 				handler.sendMessage(msg);
-				
+
 				response = new NanoHTTPD.Response(Status.OK,
-						NanoHTTPD.MIME_PLAINTEXT, ResponseData.sendResponse(true,"success"));
+						NanoHTTPD.MIME_PLAINTEXT, ResponseData.sendResponse(
+								true, "success"));
 			}
 		}
 
@@ -209,7 +225,7 @@ public class HttpServerService extends Service implements
 
 	@Override
 	public Response listEntries(Method method, Map<String, String> header,
-				Map<String, String> parameters)
+			Map<String, String> parameters)
 	{
 		NanoHTTPD.Response response = null;
 
@@ -224,7 +240,8 @@ public class HttpServerService extends Service implements
 			String data = gson.toJson(models);
 
 			response = new NanoHTTPD.Response(Status.OK,
-					NanoHTTPD.MIME_PLAINTEXT,ResponseData.sendResponse(true,data));
+					NanoHTTPD.MIME_PLAINTEXT, ResponseData.sendResponse(true,
+							data));
 		}
 		return response;
 	}
