@@ -4,10 +4,6 @@
 <head>
 <title>Welcome</title>
 <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
-<script src="js/jquery.cookie.js"></script>
-<script src="js/Utils.js"></script>
-
-
 <script>
 	/*
 	 * On Ready
@@ -61,8 +57,22 @@
 	}
 
 	function logout() {
-		Utils.removePassword();
-		window.location.href = "/index.html";
+		$.post("api_logout_url", 
+		function(data, status)
+		 {
+			var respData = JSON.parse(data);
+			if (respData.valid) 
+			{
+				// Valid
+				window.location.href = "/login.html";
+			} 
+			else 
+			{
+				alert(respData.data);
+			}
+
+		});
+		
 	}
 </script>
 
@@ -97,7 +107,8 @@
 			</tr>
 
 			<tr>
-				<td><a href="" onclick="logout();">Logout</a></td>
+				<td><input type="button" value="Logout"
+					onclick="logout();"></td>
 			</tr>
 		</table>
 	</form>

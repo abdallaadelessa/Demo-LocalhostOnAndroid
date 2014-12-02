@@ -4,9 +4,6 @@
 <head>
 <title>Welcome</title>
 <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
-<script src="js/jquery.cookie.js"></script>
-<script src="js/Utils.js"></script>
-
 <script>
 	/*
 	 * Methods
@@ -22,8 +19,6 @@
 			
 			if (respData.valid) 
 			{
-				// Valid
-				Utils.savePassword(pass);
 				window.location.href = "/index.html";
 			} 
 			else 

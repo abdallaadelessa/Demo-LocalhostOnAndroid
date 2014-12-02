@@ -12,7 +12,7 @@ import com.google.gson.Gson;
 
 public class AppServerRestApi
 {
-	private static final int SESSION_TIEMOUT_SECS = 2;
+	private static final int SESSION_TIEMOUT_SECS = 60;
 	private AppServerRestApiInterface api;
 	private SessionUser onlineUser;
 
@@ -86,6 +86,11 @@ public class AppServerRestApi
 			case API_LOGIN_URL:
 			{
 				response = login(cxt, method, header, parameters);
+				break;
+			}
+			case API_LOGOUT_URL:
+			{
+				response = logout(cxt, method, header);
 				break;
 			}
 			case API_TEST_AJAX_URL:
@@ -181,6 +186,26 @@ public class AppServerRestApi
 		return response;
 	}
 
+	private Response logout(Context cxt, Method method,
+			Map<String, String> header)
+	{
+		NanoHTTPD.Response response = RESPONSE_ACTION.getErrorResponse(cxt,
+				RESPONSE_ACTION.NOT_AUTHENTICATED);
+
+		if (method == Method.POST)
+		{
+			String remoteIp = header.get(HTTPSession.REMOTE_ADDR);
+			if (SessionUser.checkIp(onlineUser, remoteIp, true))
+			{
+				checkOutOnlineUser();
+				response = RESPONSE_ACTION.getErrorResponse(cxt,
+						RESPONSE_ACTION.LOGGEDOUT_SUCCESS);
+			}
+
+		}
+		return response;
+	}
+
 	private boolean isUserAuthenticated(Map<String, String> header)
 	{
 		String remoteIp = header.get(HTTPSession.REMOTE_ADDR);
@@ -203,7 +228,7 @@ public class AppServerRestApi
 			}
 			else
 			{
-				onlineUser = null;
+				 checkOutOnlineUser();
 			}
 		}
 		return canMakeReq;
@@ -212,14 +237,19 @@ public class AppServerRestApi
 	// -------------------------------------
 	// helpers
 
-	public NanoHTTPD.Response checkInOnlineUser(Context cxt, String remoteIp)
+	private NanoHTTPD.Response checkInOnlineUser(Context cxt, String remoteIp)
 	{
 		onlineUser = new SessionUser(remoteIp, System.currentTimeMillis());
-		return RESPONSE_ACTION
-				.getErrorResponse(cxt, RESPONSE_ACTION.PASSWORD_RIGHT);
+		return RESPONSE_ACTION.getErrorResponse(cxt,
+				RESPONSE_ACTION.PASSWORD_RIGHT);
 	}
 
-	public boolean isHtmlPage(String pageToLoad)
+	private void checkOutOnlineUser()
+	{
+		onlineUser = null ;
+	}
+	
+	private boolean isHtmlPage(String pageToLoad)
 	{
 		return pageToLoad.endsWith(".html");
 	}
@@ -278,9 +308,10 @@ public class AppServerRestApi
 
 	public enum RESPONSE_ACTION
 	{
-		PASSWORD_RIGHT, PASSWORD_WRONG, NOT_AUTHENTICATED, ANOTHER_USER_LOGGED, NOT_FOUND, INTERNAL_ERROR;
+		PASSWORD_RIGHT, PASSWORD_WRONG,LOGGEDOUT_SUCCESS, NOT_AUTHENTICATED, ANOTHER_USER_LOGGED, NOT_FOUND, INTERNAL_ERROR;
 
-		public static Response getErrorResponse(Context cxt, RESPONSE_ACTION error)
+		public static Response getErrorResponse(Context cxt,
+				RESPONSE_ACTION error)
 		{
 			Response response = null;
 
@@ -289,19 +320,22 @@ public class AppServerRestApi
 				case PASSWORD_RIGHT:
 					response = new NanoHTTPD.Response(Status.OK,
 							NanoHTTPD.MIME_PLAINTEXT,
-							ResponseData.sendResponse(true, "Success"));
+							ResponseData.sendResponse(true, "login Success"));
 					break;
 				case PASSWORD_WRONG:
 					response = new NanoHTTPD.Response(Status.OK,
 							NanoHTTPD.MIME_PLAINTEXT,
-							ResponseData.sendResponse(false,
-									"Wrong Password"));
+							ResponseData.sendResponse(false, "Wrong Password"));
+					break;
+				case LOGGEDOUT_SUCCESS:
+					response = new NanoHTTPD.Response(Status.OK,
+							NanoHTTPD.MIME_PLAINTEXT,
+							ResponseData.sendResponse(true, "logout success"));
 					break;
 				case NOT_AUTHENTICATED:
 					response = new NanoHTTPD.Response(Status.OK,
 							NanoHTTPD.MIME_PLAINTEXT,
-							ResponseData.sendResponse(false,
-									"Session timeout"));
+							ResponseData.sendResponse(false, "Session timeout"));
 					break;
 
 				case ANOTHER_USER_LOGGED:
@@ -310,17 +344,17 @@ public class AppServerRestApi
 							ResponseData.sendResponse(false,
 									"Another device has logged in"));
 					break;
-					
-				//----------> Html Mime Type
-					
+
+				// ----------> Html Mime Type
+
 				case INTERNAL_ERROR:
 					response = new NanoHTTPD.Response(Status.INTERNAL_ERROR,
-							NanoHTTPD.MIME_HTML,"Internal Error");
+							NanoHTTPD.MIME_HTML, "Internal Error");
 					break;
 
 				case NOT_FOUND:
 					response = new NanoHTTPD.Response(Status.NOT_FOUND,
-							NanoHTTPD.MIME_HTML,"Page Not Found");
+							NanoHTTPD.MIME_HTML, "Page Not Found");
 					break;
 				default:
 					break;
@@ -353,6 +387,8 @@ public class AppServerRestApi
 	// Login
 	private static final String API_LOGIN_URL = "api_login_url";
 	public static final String PARAM_API_LOGIN_PASSWORD = "api_login_param_password";
+	// Logout
+	private static final String API_LOGOUT_URL = "api_logout_url";
 	// Test Ajax
 	private static final String API_TEST_AJAX_URL = "ajax_app";
 	public static final String PARAM_API_TEST_AJAX_TO_ANDROID = "to_android";

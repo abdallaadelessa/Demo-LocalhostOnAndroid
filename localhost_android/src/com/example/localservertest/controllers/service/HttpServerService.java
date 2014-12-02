@@ -231,8 +231,6 @@ public class HttpServerService extends Service implements
 
 	// -------------------------------------------------
 
-
-	
 	class ListModel
 	{
 		int id;
