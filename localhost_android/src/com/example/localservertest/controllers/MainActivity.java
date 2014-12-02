@@ -7,8 +7,6 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ToggleButton;
 import com.example.localservertest.R;
-import com.example.localservertest.R.id;
-import com.example.localservertest.R.layout;
 import com.example.localservertest.controllers.service.HttpServerService;
 
 public class MainActivity extends ActionBarActivity

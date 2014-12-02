@@ -1,5 +1,19 @@
-package com.example.localservertest.helpers;
-import java.io.*;
+package com.example.localservertest.controllers.modelcontroller;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.PushbackInputStream;
+import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -22,7 +36,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
-import android.util.Log;
 
 /**
  * A simple, tiny, nicely embeddable HTTP server in Java
@@ -189,7 +202,6 @@ public abstract class NanoHTTPD {
                             }
                         });
                     } catch (IOException e) {
-                    	Log.i("DEBUG", e.getMessage());
                     }
                 } while (!myServerSocket.isClosed());
             }
@@ -282,7 +294,6 @@ public abstract class NanoHTTPD {
      * @return HTTP response, see class Response for details
      */
     public Response serve(IHTTPSession session) {
-  	
         Map<String, String> files = new HashMap<String, String>();
         Method method = session.getMethod();
         if (Method.PUT.equals(method) || Method.POST.equals(method)) {
@@ -829,9 +840,7 @@ public abstract class NanoHTTPD {
     }
 
     protected class HTTPSession implements IHTTPSession {
-        public static final String HTTP_CLIENT_IP = "http-client-ip";
-		public static final String REMOTE_ADDR = "remote-addr";
-		public static final int BUFSIZE = 8192;
+        public static final int BUFSIZE = 8192;
         private final TempFileManager tempFileManager;
         private final OutputStream outputStream;
         private PushbackInputStream inputStream;
@@ -857,8 +866,8 @@ public abstract class NanoHTTPD {
             String remoteIp = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ? "127.0.0.1" : inetAddress.getHostAddress().toString();
             headers = new HashMap<String, String>();
 
-            headers.put(REMOTE_ADDR, remoteIp);
-            headers.put(HTTP_CLIENT_IP, remoteIp);
+            headers.put("remote-addr", remoteIp);
+            headers.put("http-client-ip", remoteIp);
         }
 
         @Override

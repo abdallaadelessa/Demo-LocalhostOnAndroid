@@ -1,18 +1,19 @@
-package com.example.localservertest.helpers;
+package com.example.localservertest.controllers.modelcontroller;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import android.content.Context;
-import com.example.localservertest.helpers.NanoHTTPD.HTTPSession;
-import com.example.localservertest.helpers.NanoHTTPD.Method;
-import com.example.localservertest.helpers.NanoHTTPD.Response;
-import com.example.localservertest.helpers.NanoHTTPD.Response.Status;
+import com.example.localservertest.controllers.modelcontroller.NanoHTTPD.Method;
+import com.example.localservertest.controllers.modelcontroller.NanoHTTPD.Response;
+import com.example.localservertest.controllers.modelcontroller.NanoHTTPD.Response.Status;
+import com.example.localservertest.helpers.Utils;
 import com.google.gson.Gson;
 
 public class AppServerRestApi
 {
-	private static final int SESSION_TIEMOUT_SECS = 60;
+	private static final int SESSION_TIEMOUT_SECS = 10;
+	public static final String HEADER_PARAM_REMOTE_ADDR = "remote-addr";
 	private AppServerRestApiInterface api;
 	private SessionUser onlineUser;
 
@@ -149,7 +150,7 @@ public class AppServerRestApi
 			if (parameters
 					.containsKey(AppServerRestApi.PARAM_API_LOGIN_PASSWORD))
 			{
-				String remoteIp = header.get(HTTPSession.REMOTE_ADDR);
+				String remoteIp = header.get(HEADER_PARAM_REMOTE_ADDR);
 				if (onlineUser != null)
 				{
 					if (SessionUser.checkIp(onlineUser, remoteIp, false))
@@ -194,7 +195,7 @@ public class AppServerRestApi
 
 		if (method == Method.POST)
 		{
-			String remoteIp = header.get(HTTPSession.REMOTE_ADDR);
+			String remoteIp = header.get(HEADER_PARAM_REMOTE_ADDR);
 			if (SessionUser.checkIp(onlineUser, remoteIp, true))
 			{
 				checkOutOnlineUser();
@@ -208,7 +209,7 @@ public class AppServerRestApi
 
 	private boolean isUserAuthenticated(Map<String, String> header)
 	{
-		String remoteIp = header.get(HTTPSession.REMOTE_ADDR);
+		String remoteIp = header.get(HEADER_PARAM_REMOTE_ADDR);
 		boolean canMakeReq = false;
 		if (onlineUser != null && remoteIp != null)
 		{
