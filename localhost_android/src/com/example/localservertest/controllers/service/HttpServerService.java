@@ -90,12 +90,7 @@ public class HttpServerService extends Service implements
 			{
 				appServerRestApi = new AppServerRestApi(this);
 				server = new WebServer();
-				InputStream in = getResources().openRawResource(R.raw.clientkeystore);
-				SSLServerSocketFactory factory = NanoHTTPD
-						.makeSSLSocketFactory(in,"123456".toCharArray());
-				server.makeSecure(factory);
 				server.start();
-
 				final String formatedIpAddress = getIpAddress();
 				String msg = "Please access! http://" + formatedIpAddress + ":"
 						+ PORT;
