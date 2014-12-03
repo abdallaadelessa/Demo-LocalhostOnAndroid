@@ -102,13 +102,12 @@ public class HttpServerService extends Service implements
 						+ PORT;
 				Toast.makeText(this, msg, 1000).show();
 				Log.d("DEBUG", msg);
-
 			}
 			catch (Exception ioe)
 			{
 				Log.w("Httpd", "The server could not start.");
 			}
-			Log.w("Httpd", "Web server initialized.");
+			
 		}
 	}
 
