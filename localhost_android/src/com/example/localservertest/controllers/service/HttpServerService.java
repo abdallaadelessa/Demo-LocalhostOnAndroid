@@ -245,12 +245,12 @@ public class HttpServerService extends Service implements
 
 	// -------------------------------------------------
 
-	class ListModel
+	public static class ListModel
 	{
 		int id;
 		String name;
 
-		private ListModel(int id, String name)
+		public ListModel(int id, String name)
 		{
 			super();
 			this.id = id;

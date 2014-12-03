@@ -21,21 +21,21 @@ public class Utils
 	public static void log(String msg)
 	{
 
-			if (msg == null)
-			{
-				Log.i(LOG_TAG, "--------------------------");
-			}
-			else
-			{
-				Log.i(LOG_TAG, msg);
-			}
+		if (msg == null)
+		{
+			Log.i(LOG_TAG, "--------------------------");
+		}
+		else
+		{
+			Log.i(LOG_TAG, msg);
+		}
 	}
-	
+
 	public static boolean isStringEmpty(CharSequence input)
 	{
 		return TextUtils.isEmpty(input);
 	}
-	
+
 	public static String getMimeType(String url)
 	{
 		String type = null;
@@ -52,7 +52,7 @@ public class Utils
 		}
 		return type;
 	}
-	
+
 	private static String[] splitPathToFileNameAndExtByLastDot(String path)
 	{
 		String[] fileNameAndExt = null;
@@ -75,20 +75,20 @@ public class Utils
 		return fileNameAndExt;
 	}
 
-	//----------------------
-	
-	public static String convertHtmlPageToString(Context cxt ,String pageName)
+	// ----------------------
+
+	public static String convertHtmlPageToString(Context cxt, String pageName)
 	{
 		String answer = "";
 		try
 		{
-			InputStream stream = getFileFromAssets(cxt,pageName);
+			InputStream stream = getFileFromAssets(cxt, pageName);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(
 					stream));
 			String line = "";
 			while ((line = reader.readLine()) != null)
 			{
-				answer += line+"\n";
+				answer += line + "\n";
 			}
 			reader.close();
 		}
@@ -98,12 +98,21 @@ public class Utils
 		}
 		return answer;
 	}
-	
-	public static InputStream getFileFromAssets(Context cxt , String fileName) throws IOException
+
+	public static InputStream getFileFromAssets(Context cxt, String fileName)
+			throws IOException
 	{
 		InputStream stream = cxt.getAssets().open(fileName);
 		return stream;
 	}
 
+	public static String getString(InputStream is) throws IOException
+	{
+		int ch;
+		StringBuilder sb = new StringBuilder();
+		while ((ch = is.read()) != -1)
+			sb.append((char) ch);
+		return sb.toString();
+	}
 
 }

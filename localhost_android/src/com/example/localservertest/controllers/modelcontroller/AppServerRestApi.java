@@ -12,7 +12,7 @@ import com.google.gson.Gson;
 
 public class AppServerRestApi
 {
-	private static final int SESSION_TIEMOUT_SECS = 10;
+	private static final int SESSION_TIEMOUT_SECS = 60;
 	public static final String HEADER_PARAM_REMOTE_ADDR = "host";
 	private AppServerRestApiInterface api;
 	private SessionUser onlineUser;
@@ -68,8 +68,17 @@ public class AppServerRestApi
 				}
 				else
 				{
-					return RESPONSE_ACTION.getErrorResponse(cxt,
-							RESPONSE_ACTION.NOT_AUTHENTICATED);
+					if(onlineUser==null)
+					{
+						return RESPONSE_ACTION.getErrorResponse(cxt,
+								RESPONSE_ACTION.NOT_AUTHENTICATED);
+					}
+					else
+					{
+						return RESPONSE_ACTION.getErrorResponse(cxt,
+								RESPONSE_ACTION.ANOTHER_USER_LOGGED);
+					}
+
 				}
 			}
 			response = route(cxt, pageToLoad, header, method, parameters);
@@ -336,7 +345,7 @@ public class AppServerRestApi
 				case NOT_AUTHENTICATED:
 					response = new NanoHTTPD.Response(Status.OK,
 							NanoHTTPD.MIME_PLAINTEXT,
-							ResponseData.sendResponse(false, "Session timeout"));
+							ResponseData.sendResponse(false, "You are Not Currently Logged In"));
 					break;
 
 				case ANOTHER_USER_LOGGED:
@@ -386,22 +395,22 @@ public class AppServerRestApi
 
 	// ---------------------------------------> Apis
 	// Login
-	private static final String API_LOGIN_URL = "api_login_url";
+	public static final String API_LOGIN_URL = "api_login_url";
 	public static final String PARAM_API_LOGIN_PASSWORD = "api_login_param_password";
 	// Logout
-	private static final String API_LOGOUT_URL = "api_logout_url";
+	public static final String API_LOGOUT_URL = "api_logout_url";
 	// Test Ajax
-	private static final String API_TEST_AJAX_URL = "ajax_app";
+	public static final String API_TEST_AJAX_URL = "ajax_app";
 	public static final String PARAM_API_TEST_AJAX_TO_ANDROID = "to_android";
 	public static final String PARAM_API_TEST_AJAX_FROM_ANDROID = "from_android";
 	// Test Stream
-	private static final String API_TEST_STREAM_URL = "ajax_app_stream";
+	public static final String API_TEST_STREAM_URL = "ajax_app_stream";
 	public static final String PARAM_API_TEST_STREAM_FILE_NAME = "filename";
 	// list entries
-	private static final String API_LIST_ENTRIES_URL = "list_entries_url";
+	public static final String API_LIST_ENTRIES_URL = "list_entries_url";
 	// ---------------------------------------> Pages
-	private static final String MAIN_PAGE = "index.html";
-	private static final String LOGIN_HTML = "login.html";
+	public static final String MAIN_PAGE = "index.html";
+	public static final String LOGIN_HTML = "login.html";
 	// ----------------------------------------
 
 	private static final List<String> AUTHENTICATED_APIS_AND_URLS = Arrays
