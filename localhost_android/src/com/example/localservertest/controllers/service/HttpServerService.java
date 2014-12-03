@@ -84,7 +84,6 @@ public class HttpServerService extends Service implements
 	private void startHttpServer()
 	{
 		stopHttpServer();
-
 		if (server == null)
 		{
 			try
@@ -106,8 +105,7 @@ public class HttpServerService extends Service implements
 			catch (Exception ioe)
 			{
 				Log.w("Httpd", "The server could not start.");
-			}
-			
+			}		
 		}
 	}
 
