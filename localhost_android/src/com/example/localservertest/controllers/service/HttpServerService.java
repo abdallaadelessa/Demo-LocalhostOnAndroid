@@ -97,7 +97,7 @@ public class HttpServerService extends Service implements
 				server.start();
 
 				final String formatedIpAddress = getIpAddress();
-				String msg = "Please access! http://" + formatedIpAddress + ":"
+				String msg = "Please access! https://" + formatedIpAddress + ":"
 						+ PORT;
 				Toast.makeText(this, msg, 1000).show();
 				Log.d("DEBUG", msg);
